@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib as plt
 import folium
 from geopy.geocoders import Bing
+from folium.plugins import HeatMap
 
 
 geolocator = Bing(api_key="AqjmiNHvJvjQEzYWYWsorqP7jC-F741tsJ7RsNM9Fxs_sSaR6ieRJbAAJBbZgkVb")
@@ -26,14 +27,36 @@ print(location.latitude, location.longitude)
 
 print(smallSet.iloc[1]['Street Name'])
 
-m = folium.Map(location = (location.latitude, location.longitude)).save("map.html")
-
-smallSet['Street Name'] = smallSet['Street Name'] + "Andover MA 01810"
-for i in range(len(smallSet.index)):
-    print(geolocator.geocode(smallSet.iloc[i]['Street Name']))#.latitude, geolocator.geocode(smallSet.iloc[i]['Street Name']).longitude)
+map_object = folium.Map(location = [location.latitude, location.longitude])
+map_object.save("map.html")
+map_object
 
 
+heatMapCoords = []
 
-#WHERE I LEFT OFF: trying to figure out how to display the heat map - coordinates are wrong (one is from DRC) but most should be correct
 
-                      
+#xCoords = []
+#yCoords = []
+
+smallSet['Street Name'] = smallSet['Street Name'] + " Andover MA 01810"
+for i in range(len(smallSet)):
+    #print((geolocator.geocode(smallSet.iloc[i]['Street Name']).latitude),(geolocator.geocode(smallSet.iloc[i]['Street Name']).longitude))
+    rowCoords = [geolocator.geocode(smallSet.iloc[i]['Street Name']).latitude, geolocator.geocode(smallSet.iloc[i]['Street Name']).longitude]
+    heatMapCoords.append(rowCoords)
+    #xCoords.append(geolocator.geocode(smallSet.iloc[i]['Street Name']).latitude)
+    #yCoords.append(geolocator.geocode(smallSet.iloc[i]['Street Name']).longitude)
+
+#heatMapCoords = [xCoords, yCoords]
+
+print("START HERE")
+
+testData = [
+    [42.6163209, -71.1542474],
+    [42.62123777, -71.14677463],
+    [42.70494602, -71.13411734],
+    [42.64060632, -71.14474505],
+    [42.65934982, -71.18007087],
+]
+
+HeatMap(heatMapCoords).add_to(map_object)
+map_object.save("map.html")
