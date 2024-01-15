@@ -65,3 +65,34 @@ map_object.save("map.html")
 
 newMapObject = folium.Map(location = [location.latitude, location.longitude])
 newMapObject.save("dot_map.html")
+
+streetName = []
+coordinateList =[]
+
+newList = andoverSet.groupby(['Street Name']).aggregate({'Original # Customer Affected' : sum})
+
+radius = 20
+for i in tqdm.trange(len(andoverSet)):
+    if andoverSet.iloc[i]['Street Name'] not in streetName:
+        streetName.append(andoverSet.iloc[i]['Street Name'])
+        folium.Circle(
+        location=[andoverSet.iloc[i]['Latitude'], andoverSet.iloc[i]['Longitude']],
+        radius= radius, # newList.query(['Street Name'] == [andoverSetiloc[i]['Street Name']))['Original # Customer Affected'] ,
+        color="black",
+        weight=1,
+        fill_opacity=0.6,
+        opacity=1,
+        fill_color="yellow",
+        fill=False,  # gets overridden by fill_color
+        popup="{} meters".format(radius),
+        tooltip="Testing this feature still... ",
+        ).add_to(newMapObject)
+        
+
+print(streetName)
+
+newMapObject.save("dot_map.html")
+
+print(andoverSet.groupby(['Street Name']).aggregate({'Original # Customer Affected' : sum}))
+    
+
