@@ -69,30 +69,54 @@ newMapObject.save("dot_map.html")
 streetName = []
 coordinateList =[]
 
-newList = andoverSet.groupby(['Street Name']).aggregate({'Original # Customer Affected' : sum})
+andoverSet['Count'] = 1
 
-radius = 20
-for i in tqdm.trange(len(andoverSet)):
-    if andoverSet.iloc[i]['Street Name'] not in streetName:
-        streetName.append(andoverSet.iloc[i]['Street Name'])
-        folium.Circle(
-        location=[andoverSet.iloc[i]['Latitude'], andoverSet.iloc[i]['Longitude']],
-        radius= radius, # newList.query(['Street Name'] == [andoverSetiloc[i]['Street Name']))['Original # Customer Affected'] ,
+perStreetInfo = (
+    andoverSet
+    .groupby(['Street Name'])
+    .aggregate({'Original # Customer Affected' : 'sum',
+                'Count' : 'sum',
+                'Latitude': 'first',
+                'Longitude': 'first'})
+
+
+)
+# Now we can just loop over streets rather than outages
+for street_name, street_info in (perStreetInfo.iterrows()):
+    radius = street_info['Original # Customer Affected'] / 50 # rescale this if needed
+    if radius < 30:
+        radius= 30
+    count = street_info['Count']
+    if count > 100:
+        color = "dark_red"
+    elif count > 40:
+        color = "red"
+    elif count > 20:
+        color = "yellow"
+    else:
+        color = "green"
+    folium.Circle(
+        location=[street_info['Latitude'], street_info['Longitude']],
+        radius=radius,
         color="black",
         weight=1,
         fill_opacity=0.6,
         opacity=1,
-        fill_color="yellow",
+        fill_color= color,
         fill=False,  # gets overridden by fill_color
-        popup="{} meters".format(radius),
-        tooltip="Testing this feature still... ",
-        ).add_to(newMapObject)
+        popup="People affected: " + str(street_info['Original # Customer Affected']),
+        tooltip="Amount of outages: " + str(count),
+    ).add_to(newMapObject)
+
+streetNameCounts = andoverSet.groupby('Street Name').size().reset_index(name='Count')
+print(streetNameCounts)
+pd.set_option('display.max_rows', None)
+print(perStreetInfo)
         
 
-print(streetName)
+#print(streetName)
 
 newMapObject.save("dot_map.html")
 
-print(andoverSet.groupby(['Street Name']).aggregate({'Original # Customer Affected' : sum}))
+#print(perStreetInfo.groupby('Street Name').size().reset_index(name='Count'))
     
-
